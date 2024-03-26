@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Speech API デモ</title>
+  <style>
+    #transcript {
+      width: 800px;
+      height: 100px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>PrenSeeデモ</h1>
+
+  <button id="start">音声認識開始</button>
+  <button id="stop" disabled>音声認識停止</button>
+  <div id="transcript"></div>
+
+  <script>
+    let finalTranscript = ''; // finalTranscriptの変数を宣言して初期化
+
+    const transcript = document.getElementById('transcript');
+    const startButton = document.getElementById('start');
+    const stopButton = document.getElementById('stop');
+    let recognition;
+
+    startButton.addEventListener('click', () => {
+      recognition = new webkitSpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'ja-JP';
+
+      recognition.onstart = () => {
+        transcript.textContent = '';
+        startButton.disabled = true;
+        stopButton.disabled = false;
+      };
+
+      recognition.onresult = (event) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript + ".";
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        transcript.textContent = finalTranscript + interimTranscript;
+      };
+
+      recognition.onerror = (event) => {
+        transcript.textContent = 'Error: ' + event.error;
+      };
+
+      recognition.start();
+    });
+
+    stopButton.addEventListener('click', () => {
+      recognition.stop();
+      startButton.disabled = false;
+      stopButton.disabled = true;
+    });
+  </script>
+</body>
+</html>
